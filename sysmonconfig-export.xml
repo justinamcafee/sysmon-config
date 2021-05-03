@@ -1,4 +1,4 @@
-﻿<!--
+<!--
   sysmon-config | A Sysmon configuration focused on default high-quality event tracing and easy customization by the community
   Source version:	73 | Date: 2021-02-16
   Source project:	https://github.com/SwiftOnSecurity/sysmon-config
@@ -204,7 +204,7 @@
 			<Image condition="is">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorsvw.exe</Image> <!--Microsoft:DotNet-->
 			<Image condition="is">C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorsvw.exe</Image> <!--Microsoft:DotNet-->
 			<Image condition="is">C:\Windows\Microsoft.Net\Framework64\v3.0\WPF\PresentationFontCache.exe</Image> <!--Windows: Font cache service-->
-			<ParentCommandLine condition="contains">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\ngentask.exe</ParentCommandLine>
+			<ParentCommandLine condition="begin with">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\ngentask.exe</ParentCommandLine>
 			<ParentImage condition="is">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorsvw.exe</ParentImage> <!--Microsoft:DotNet-->
 			<ParentImage condition="is">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\ngentask.exe</ParentImage> <!--Microsoft:DotNet-->
 			<ParentImage condition="is">C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorsvw.exe</ParentImage> <!--Microsoft:DotNet-->
@@ -263,12 +263,12 @@
 		<!-- https://www.first.org/resources/papers/conf2017/APT-Log-Analysis-Tracking-Attack-Tools-by-Audit-Policy-and-Sysmon.pdf -->
 
 		<!--DATA: UtcTime, ProcessGuid, ProcessId, Image, User, Protocol, Initiated, SourceIsIpv6, SourceIp, SourceHostname, SourcePort, SourcePortName, DestinationIsIpV6, DestinationIp, DestinationHostname, DestinationPort, DestinationPortName-->
-	<RuleGroup name="" groupRelation="or">
+	<RuleGroup name="netinclusions" groupRelation="or">
 		<NetworkConnect onmatch="include">
 			<!--Suspicious sources for network-connecting binaries-->
 			<Image name="Usermode" condition="begin with">C:\Users</Image> <!--Tools downloaded by users can use other processes for networking, but this is a very valuable indicator.-->
 			<Image name="Caution" condition="begin with">C:\Recycle</Image> <!--Nothing should operate from the RecycleBin locations.-->
-			<Image condition="begin with">C:\ProgramData</Image> <!--Normally, network communications should be sourced from "Program Files" not from ProgramData, something to look at-->
+			<Image condition="begin with">C:\ProgramData</Image> <!-- Normally, network communications should be sourced from "Program Files" not from ProgramData, something to look at-->
 			<Image condition="begin with">C:\Windows\Temp</Image> <!--Suspicious anything would communicate from the system-level temp directory-->
 			<Image name="Caution" condition="begin with">\</Image> <!--Devices and VSC shouldn't be executing changes | Credit: @SBousseaden @ionstorm @neu5ron @PerchedSystems [ https://twitter.com/SwiftOnSecurity/status/1133167323991486464 ] -->
 			<Image name="Caution" condition="begin with">C:\perflogs</Image> <!-- Credit @blu3_team [ https://blu3-team.blogspot.com/2019/05/netconn-from-suspicious-directories.html ] -->
@@ -298,6 +298,7 @@
 			<Image condition="image">notepad.exe</Image> <!--Windows: [ https://secrary.com/ReversingMalware/CoinMiner/ ] [ https://blog.cobaltstrike.com/2013/08/08/why-is-notepad-exe-connecting-to-the-internet/ ] -->
 			<Image condition="image">nslookup.exe</Image> <!--Windows: Retrieve data over DNS -->
 			<Image condition="image">powershell.exe</Image> <!--Windows: PowerShell interface-->
+			<Image condition="image">powershell_ise.exe</Image> <!--Windows: PowerShell interface-->
 			<Image condition="image">qprocess.exe</Image> <!--Windows: [ https://www.first.org/resources/papers/conf2017/APT-Log-Analysis-Tracking-Attack-Tools-by-Audit-Policy-and-Sysmon.pdf ] -->
 			<Image condition="image">qwinsta.exe</Image> <!--Windows: Query remote sessions | Credit @ion-storm -->
 			<Image condition="image">qwinsta.exe</Image> <!--Windows: Remotely query login sessions on a server or workstation | Credit @ion-storm -->
@@ -312,11 +313,30 @@
 			<Image condition="image">tasklist.exe</Image> <!--Windows: List processes, has remote ability -->
 			<Image condition="image">wmic.exe</Image> <!--WindowsManagementInstrumentation: Credit @Cyb3rOps [ https://gist.github.com/Neo23x0/a4b4af9481e01e749409 ] -->
 			<Image condition="image">wscript.exe</Image> <!--WindowsScriptingHost: | Credit @arekfurt -->
+			<!--Live of the Land Binaries and scripts (LOLBAS) |Credit @MaxNad -->
+			<Image condition="image">bitsadmin.exe</Image> <!-- Windows: Background Intelligent Transfer Service - Can download from URLs -->
+			<Image condition="image">esentutl.exe</Image> <!-- Windows: Database utilities for the ESE - Can fetch from UNC paths -->
+			<Image condition="image">expand.exe</Image> <!-- Windows: Expands one or more compressed files - Can fetch from UNC paths -->
+			<Image condition="image">extrac32.exe</Image> <!--Windows: Uncompress .cab files - Can fetch from UNC paths -->
+			<Image condition="image">findstr.exe</Image> <!-- Windows: Search for strings - Can fetch from UNC paths -->
+			<Image condition="image">GfxDownloadWrapper.exe</Image> <!-- Intel Graphics Control Panel: Remote file download -->
+			<Image condition="image">ieexec.exe</Image> <!-- Windows: Microsoft .NET Framework application - Download and execute from URLs -->
+			<Image condition="image">makecab.exe</Image> <!-- Windows: Packages existing files into a .cab - Can fetch from UNC paths -->
+			<Image condition="image">replace.exe</Image> <!-- Windows: Used to replace file with another file - Can fetch from UNC paths -->
+			<Image condition="image">Excel.exe</Image> <!-- Windows Office: Excel - Can download from URLs -->
+			<Image condition="image">Powerpnt.exe</Image> <!-- Windows Office: PowerPoint - Can download from URLs -->
+			<Image condition="image">Winword.exe</Image> <!-- Windows Office: Word - Can download from URLs -->
+			<Image condition="image">squirrel.exe</Image> <!-- Windows: Update the Nuget/Squirrel packages. Part of Teams. - Can download from URLs -->
 			<!--Relevant 3rd Party Tools-->
+			<Image condition="image">netcat.exe</Image> <!-- Compiled netcat.c file if naming convention is kept https://github.com/DarrenRainey/netcat -->
 			<Image condition="image">nc.exe</Image> <!-- Nmap's modern version of netcat [ https://nmap.org/ncat/guide/index.html#ncat-overview ] [ https://securityblog.gr/1517/create-backdoor-in-windows-with-ncat/ ] -->
+			<Image condition="image">nc64.exe</Image> <!-- 64-bit version of nc that can be used on 64-bit Windows Architectures https://github.com/DarrenRainey/netcat-->
 			<Image condition="image">ncat.exe</Image> <!-- Nmap's modern version of netcat [ https://nmap.org/ncat/guide/index.html#ncat-overview ] [ https://securityblog.gr/1517/create-backdoor-in-windows-with-ncat/ ] -->
+			<Image condition="image">procdump.exe</Image> <!-- Sysinternals Suite client side that can be used to dump clear text passwords from memory -->
+   			<Image condition="image">procdump64.exe</Image> <!-- Sysinternals Suite client side 64-bit version that can be used to dump clear text passwords from memory -->
 			<Image condition="image">psexec.exe</Image> <!--Sysinternals:PsExec client side | Credit @Cyb3rOps -->
 			<Image condition="image">psexesvc.exe</Image> <!--Sysinternals:PsExec server side | Credit @Cyb3rOps -->
+			<Image condition="image">psexec64.exe</Image> <!-- Sysinernals:PsExec64 client side | 64-bit version of psexec.exe -->
 			<Image condition="image">tor.exe</Image> <!--Tor [ https://www.hybrid-analysis.com/sample/800bf028a23440134fc834efc5c1e02cc70f05b2e800bbc285d7c92a4b126b1c?environmentId=100 ] -->
 			<Image condition="image">vnc.exe</Image> <!-- VNC client | Credit @Cyb3rOps -->
 			<Image condition="image">vncservice.exe</Image> <!-- VNC server | Credit @Cyb3rOps -->
@@ -324,7 +344,7 @@
 			<Image condition="image">winexesvc.exe</Image> <!-- Winexe service executable | Credit @Cyb3rOps -->
 			<Image condition="image">nmap.exe</Image>
 			<Image condition="image">psinfo.exe</Image>
-			<!--Ports: Suspicious-->
+        	<!--Ports: Suspicious-->
 			<DestinationPort name="SSH" condition="is">22</DestinationPort> <!--SSH protocol, monitor admin connections-->
 			<DestinationPort name="Telnet" condition="is">23</DestinationPort> <!--Telnet protocol, monitor admin connections, insecure-->
 			<DestinationPort name="SMTP" condition="is">25</DestinationPort> <!--SMTP mail protocol port, insecure, used by threats-->
@@ -332,7 +352,9 @@
 			<DestinationPort name="RDP" condition="is">3389</DestinationPort> <!--Windows:RDP: Monitor admin connections-->
 			<DestinationPort name="VNC" condition="is">5800</DestinationPort> <!--VNC protocol: Monitor admin connections, often insecure, using hard-coded admin password-->
 			<DestinationPort name="VNC" condition="is">5900</DestinationPort> <!--VNC protocol Monitor admin connections, often insecure, using hard-coded admin password-->
-			<DestinationPort name="Alert,Metasploit" condition="is">444</DestinationPort>
+			<DestinationPort name="Alert,Metasploit" condition="is">4444</DestinationPort>
+			<DestinationPort name="WinRM" condition="is">5985</DestinationPort> <!-- WinRM protocol used for remote connections to execute commands -->
+			<DestinationPort name="WinRM over HTTPS" condition="is">5986</DestinationPort> <!-- WinRM over HTTPS when set up in an environment can be used for remote connections to execute commands -->
 			<!--Ports: Proxy-->
 			<DestinationPort name="Proxy" condition="is">1080</DestinationPort> <!--Socks proxy port | Credit @ion-storm-->
 			<DestinationPort name="Proxy" condition="is">3128</DestinationPort> <!--Socks proxy port | Credit @ion-storm-->
@@ -344,7 +366,7 @@
 		</NetworkConnect>
 	</RuleGroup>
 
-	<RuleGroup name="" groupRelation="or">
+	<RuleGroup name="netexclusions" groupRelation="or">
 		<NetworkConnect onmatch="exclude">
 			<!--SECTION: Microsoft-->
 			<Image condition="begin with">C:\ProgramData\Microsoft\Windows Defender\Platform\</Image>
@@ -358,6 +380,10 @@
 			<!--Section: Loopback Addresses-->
 			<DestinationIp condition="is">127.0.0.1</DestinationIp> <!--Credit @ITProPaul-->
 			<DestinationIp condition="begin with">fe80:0:0:0</DestinationIp> <!--Credit @ITProPaul-->
+            <!-- Personal configurations -->
+            <Image condition="end with">Resilio Sync.exe</Image> <!-- Credit @IAintShootinmis -->
+            <Image condition="end with">Signal Beta.exe</Image> <!-- Credit @IAintShootinmis -->
+			<Image condition="end with">Code.exe</Image> <!-- Credit @IAintShootinmis -->
 		</NetworkConnect>
 	</RuleGroup>
 
@@ -483,6 +509,8 @@
 			<TargetFilename condition="end with">.jnlp</TargetFilename> <!--Java applets-->
 			<TargetFilename condition="end with">.jse</TargetFilename> <!--Scripting [ Example: https://www.sophos.com/en-us/threat-center/threat-analyses/viruses-and-spyware/Mal~Phires-C/detailed-analysis.aspx ] -->
 			<TargetFilename condition="end with">.hta</TargetFilename> <!--Scripting-->
+			<TargetFilename condition="end with">.aspx</TargetFilename> <!--Scripting-->
+			<TargetFilename condition="end with">.asp</TargetFilename> <!--Scripting-->
 			<TargetFilename condition="end with">.job</TargetFilename> <!--Scheduled task-->
 			<TargetFilename condition="end with">.pptm</TargetFilename> <!--Microsoft:Office:Word: Macro-->
 			<TargetFilename condition="end with">.ps1</TargetFilename> <!--PowerShell [ More information: http://www.hexacorn.com/blog/2014/08/27/beyond-good-ol-run-key-part-16/ ] -->
@@ -515,6 +543,486 @@
 			<TargetFilename condition="end with">.xls</TargetFilename> <!--Legacy Office files are often used for attacks-->
 			<TargetFilename condition="end with">.ppt</TargetFilename> <!--Legacy Office files are often used for attacks-->
 			<TargetFilename condition="end with">.rtf</TargetFilename> <!--RTF files often 0day malware vectors when opened by Office-->
+			<!-- Taken from @Sduff malware Sysmon Config -->
+			<!-- Ransomare can leave notes on the filesystem, explaining their recovery process | Credit: @sduff -->
+			<TargetFilename condition="contains">decrypt all files</TargetFilename>
+			<TargetFilename condition="contains">_h_e_l_p_recover_instructions</TargetFilename>
+			<TargetFilename condition="contains">help_recover_instructions</TargetFilename>
+			<TargetFilename condition="contains">how_recover</TargetFilename>
+			<TargetFilename condition="contains">@please_read_me@</TargetFilename>
+			<TargetFilename condition="contains">-read-for-hellpp.html</TargetFilename>
+			<TargetFilename condition="contains">readme_decrypt_hydra_id_</TargetFilename>
+			<TargetFilename condition="contains">readme_decrypt_umbre_id_</TargetFilename>
+			<TargetFilename condition="contains">recover_files_</TargetFilename>
+			<TargetFilename condition="contains">recover_file_</TargetFilename>
+			<TargetFilename condition="contains">recovery_file_</TargetFilename>
+			<TargetFilename condition="contains">recovery</TargetFilename>
+			<TargetFilename condition="contains">-sorry-for-files.html</TargetFilename>
+			<TargetFilename condition="contains">@wanadecryptor@.exe</TargetFilename>
+			<TargetFilename condition="end with">about_files.txt</TargetFilename>
+			<TargetFilename condition="end with">allfilesarelocked_.bmp</TargetFilename>
+			<TargetFilename condition="end with">attention.rtf</TargetFilename>
+			<TargetFilename condition="end with">bitcryptorfilelist.txt</TargetFilename>
+			<TargetFilename condition="end with">bleepedfiles.txt</TargetFilename>
+			<TargetFilename condition="end with">buyunlockcode</TargetFilename>
+			<TargetFilename condition="end with">coin.locker.txt</TargetFilename>
+			<TargetFilename condition="end with">cryptinfo.txt</TargetFilename>
+			<TargetFilename condition="end with">cryptlogfile.txt</TargetFilename>
+			<TargetFilename condition="end with">decrypt all files *.bmp</TargetFilename>
+			<TargetFilename condition="end with">decryptallfiles.txt</TargetFilename>
+			<TargetFilename condition="end with">decryptallfiles_.txt</TargetFilename>
+			<TargetFilename condition="end with">decrypt_instructions.html</TargetFilename>
+			<TargetFilename condition="end with">decrypt_instructions.txt</TargetFilename>
+			<TargetFilename condition="end with">decrypt_instruction.txt</TargetFilename>
+			<TargetFilename condition="end with"># decrypt my files #.html</TargetFilename>
+			<TargetFilename condition="end with"># decrypt my files #.txt</TargetFilename>
+			<TargetFilename condition="end with"># decrypt my files #.vbs</TargetFilename>
+			<TargetFilename condition="end with">decrypt_readme.txt.readme</TargetFilename>
+			<TargetFilename condition="end with">decrypt_readme.txt</TargetFilename>
+			<TargetFilename condition="end with">decrypt_your_files.html</TargetFilename>
+			<TargetFilename condition="end with">encryptor_raas_readme_liesmich.txt</TargetFilename>
+			<TargetFilename condition="end with">exit.hhr.obleep</TargetFilename>
+			<TargetFilename condition="end with">filesaregone.txt</TargetFilename>
+			<TargetFilename condition="end with">getyoufiles.txt</TargetFilename>
+			<TargetFilename condition="end with">hellothere.txt</TargetFilename>
+			<TargetFilename condition="end with">help_decrypt.txt</TargetFilename>
+			<TargetFilename condition="end with">help_decrypt_your_files.html</TargetFilename>
+			<TargetFilename condition="end with">help_decyprt_your_files.html</TargetFilename>
+			<TargetFilename condition="end with">*-help_for_decrypt_file.html</TargetFilename>
+			<TargetFilename condition="end with">help recover files.txt</TargetFilename>
+			<TargetFilename condition="end with">help_recover_files.txt</TargetFilename>
+			<TargetFilename condition="end with">help_restore_files.txt</TargetFilename>
+			<TargetFilename condition="end with">help_to_decrypt_your_files.txt</TargetFilename>
+			<TargetFilename condition="end with">help_to_save_files.txt</TargetFilename>
+			<TargetFilename condition="end with">help_yourfiles.html</TargetFilename>
+			<TargetFilename condition="end with">help_your_files.txt</TargetFilename>
+			<TargetFilename condition="end with">howdecrypt.gif</TargetFilename>
+			<TargetFilename condition="end with">how_decrypt.txt</TargetFilename>
+			<TargetFilename condition="end with">_how_recover_.txt</TargetFilename>
+			<TargetFilename condition="end with">how to decrypt files.html</TargetFilename>
+			<TargetFilename condition="end with">how-to-decrypt-files.html</TargetFilename>
+			<TargetFilename condition="end with">how to decrypt files.txt</TargetFilename>
+			<TargetFilename condition="end with">how_to_decrypt_files.txt</TargetFilename>
+			<TargetFilename condition="end with">how_to_decrypt.html</TargetFilename>
+			<TargetFilename condition="end with">how to get data.txt</TargetFilename>
+			<TargetFilename condition="end with">how_to_recover_files.txt</TargetFilename>
+			<TargetFilename condition="end with">howto_recover_file_.txt</TargetFilename>
+			<TargetFilename condition="end with">how_to_restore_files.txt</TargetFilename>
+			<TargetFilename condition="end with">howto_restore_files.txt</TargetFilename>
+			<TargetFilename condition="end with">howto_restore_files_.txt</TargetFilename>
+			<TargetFilename condition="end with">iamreadytopay.txt</TargetFilename>
+			<TargetFilename condition="end with">ihaveyoursecret.key</TargetFilename>
+			<TargetFilename condition="end with">important read me.txt</TargetFilename>
+			<TargetFilename condition="end with">kryptolocker_readme.txt</TargetFilename>
+			<TargetFilename condition="end with">_locky_recover_instructions.txt</TargetFilename>
+			<TargetFilename condition="end with">nefilim-decrypt.txt</TargetFilename>
+			<TargetFilename condition="end with">qwer2.html</TargetFilename>
+			<TargetFilename condition="end with">qwer.html</TargetFilename>
+			<TargetFilename condition="end with">readdecryptfileshere.txt</TargetFilename>
+			<TargetFilename condition="end with">read if you want your files back.html</TargetFilename>
+			<TargetFilename condition="end with">readme10.txt</TargetFilename>
+			<TargetFilename condition="end with">readme1.txt</TargetFilename>
+			<TargetFilename condition="end with">readme2.txt</TargetFilename>
+			<TargetFilename condition="end with">readme3.txt</TargetFilename>
+			<TargetFilename condition="end with">readme4.txt</TargetFilename>
+			<TargetFilename condition="end with">readme5.txt</TargetFilename>
+			<TargetFilename condition="end with">readme6.txt</TargetFilename>
+			<TargetFilename condition="end with">readme7.txt</TargetFilename>
+			<TargetFilename condition="end with">readme8.txt</TargetFilename>
+			<TargetFilename condition="end with">readme9.txt</TargetFilename>
+			<TargetFilename condition="end with">readme.txt</TargetFilename>
+			<TargetFilename condition="end with">readthisnow!!!.txt</TargetFilename>
+			<TargetFilename condition="end with">read.txt</TargetFilename>
+			<TargetFilename condition="end with">recovery_files.txt</TargetFilename>
+			<TargetFilename condition="end with">recovery_file.txt</TargetFilename>
+			<TargetFilename condition="end with">recovery_key.txt</TargetFilename>
+			<TargetFilename condition="end with">restore_files_.txt</TargetFilename>
+			<TargetFilename condition="end with">ryukreadme.html</TargetFilename>
+			<TargetFilename condition="end with">_secret_code.txt</TargetFilename>
+			<TargetFilename condition="end with">secretidhere.key</TargetFilename>
+			<TargetFilename condition="end with">secret.key</TargetFilename>
+			<TargetFilename condition="end with">unblockfiles.vbs</TargetFilename>
+			<TargetFilename condition="end with">your_files_are_encrypted.html</TargetFilename>
+			<TargetFilename condition="end with">your_files.html</TargetFilename>
+			<TargetFilename condition="end with">your_files.url</TargetFilename>
+			<!-- Ransomware can encrypt files, often renaming them in the process. These are common ransomware extensions | Credit: @sduff -->
+			<TargetFilename condition="contains">cpyt</TargetFilename>
+			<TargetFilename condition="contains">crypt</TargetFilename>
+			<TargetFilename condition="contains">darkness</TargetFilename>
+			<TargetFilename condition="contains">decipher</TargetFilename>
+			<TargetFilename condition="contains">enc</TargetFilename>
+			<TargetFilename condition="contains">exx</TargetFilename>
+			<TargetFilename condition="contains">@gmail_com_</TargetFilename>
+			<TargetFilename condition="contains">help_restore</TargetFilename>
+			<TargetFilename condition="contains">help_your_files</TargetFilename>
+			<TargetFilename condition="contains">how_to_recover</TargetFilename>
+			<TargetFilename condition="contains">.hydracrypt_id_</TargetFilename>
+			<TargetFilename condition="contains">@india.com</TargetFilename>
+			<TargetFilename condition="contains">install_tor</TargetFilename>
+			<TargetFilename condition="contains">keemail.me</TargetFilename>
+			<TargetFilename condition="contains">qq_com</TargetFilename>
+			<TargetFilename condition="contains">restore_fi</TargetFilename>
+			<TargetFilename condition="contains">ukr.net</TargetFilename>
+			<TargetFilename condition="contains">.unbrecrypt_id_</TargetFilename>
+			<TargetFilename condition="contains">want your files back</TargetFilename>
+			<TargetFilename condition="end with">.0x0</TargetFilename>
+			<TargetFilename condition="end with">.1999</TargetFilename>
+			<TargetFilename condition="end with">.1cbu1</TargetFilename>
+			<TargetFilename condition="end with">.1txt</TargetFilename>
+			<TargetFilename condition="end with">.73i87a</TargetFilename>
+			<TargetFilename condition="end with">.777</TargetFilename>
+			<TargetFilename condition="end with">.7h9r</TargetFilename>
+			<TargetFilename condition="end with">.8lock8</TargetFilename>
+			<TargetFilename condition="end with">.a5zfn</TargetFilename>
+			<TargetFilename condition="end with">.aaa</TargetFilename>
+			<TargetFilename condition="end with">.abc</TargetFilename>
+			<TargetFilename condition="end with">.adk</TargetFilename>
+			<TargetFilename condition="end with">.adr</TargetFilename>
+			<TargetFilename condition="end with">.aes256</TargetFilename>
+			<TargetFilename condition="end with">aes256</TargetFilename>
+			<TargetFilename condition="end with">.aesir</TargetFilename>
+			<TargetFilename condition="end with">.afd</TargetFilename>
+			<TargetFilename condition="end with">.aga</TargetFilename>
+			<TargetFilename condition="end with">._airacropencrypted</TargetFilename>
+			<TargetFilename condition="end with">.alcatraz</TargetFilename>
+			<TargetFilename condition="end with">.amba</TargetFilename>
+			<TargetFilename condition="end with">.angelamerkel</TargetFilename>
+			<TargetFilename condition="end with">.angleware</TargetFilename>
+			<TargetFilename condition="end with">.antihacker2017</TargetFilename>
+			<TargetFilename condition="end with">.areyoulovemyransfile</TargetFilename>
+			<TargetFilename condition="end with">.areyoulovemyrans</TargetFilename>
+			<TargetFilename condition="end with">.asier</TargetFilename>
+			<TargetFilename condition="end with">.atlas</TargetFilename>
+			<TargetFilename condition="end with">.axx</TargetFilename>
+			<TargetFilename condition="end with">.barrax</TargetFilename>
+			<TargetFilename condition="end with">.bart</TargetFilename>
+			<TargetFilename condition="end with">.bart.zip</TargetFilename>
+			<TargetFilename condition="end with">.better_call_saul</TargetFilename>
+			<TargetFilename condition="end with">.bin</TargetFilename>
+			<TargetFilename condition="end with">.bitstak</TargetFilename>
+			<TargetFilename condition="end with">.bleep</TargetFilename>
+			<TargetFilename condition="end with">.bleepyourfiles</TargetFilename>
+			<TargetFilename condition="end with">.blocatto</TargetFilename>
+			<TargetFilename condition="end with">.bloc</TargetFilename>
+			<TargetFilename condition="end with">.braincrypt</TargetFilename>
+			<TargetFilename condition="end with">.breaking_bad</TargetFilename>
+			<TargetFilename condition="end with">.breeding123</TargetFilename>
+			<TargetFilename condition="end with">.bript</TargetFilename>
+			<TargetFilename condition="end with">.btcbtcbtc</TargetFilename>
+			<TargetFilename condition="end with">.btc-help-you</TargetFilename>
+			<TargetFilename condition="end with">.btc</TargetFilename>
+			<TargetFilename condition="end with">.canihelpyou</TargetFilename>
+			<TargetFilename condition="end with">.cbf</TargetFilename>
+			<TargetFilename condition="end with">.cccrrrppp</TargetFilename>
+			<TargetFilename condition="end with">.ccc</TargetFilename>
+			<TargetFilename condition="end with">.cerber2</TargetFilename>
+			<TargetFilename condition="end with">.cerber3</TargetFilename>
+			<TargetFilename condition="end with">.cerber</TargetFilename>
+			<TargetFilename condition="end with">.checkdiskenced</TargetFilename>
+			<TargetFilename condition="end with">.chifrator@qq_com</TargetFilename>
+			<TargetFilename condition="end with">.cifgksaffsfyghd</TargetFilename>
+			<TargetFilename condition="end with">.clf</TargetFilename>
+			<TargetFilename condition="end with">.coded</TargetFilename>
+			<TargetFilename condition="end with">.code</TargetFilename>
+			<TargetFilename condition="end with">.comrade</TargetFilename>
+			<TargetFilename condition="end with">.conficker</TargetFilename>
+			<TargetFilename condition="end with">.confirmation.key</TargetFilename>
+			<TargetFilename condition="end with">.country82000</TargetFilename>
+			<TargetFilename condition="end with">.coverton</TargetFilename>
+			<TargetFilename condition="end with">.crab</TargetFilename>
+			<TargetFilename condition="end with">.crashed</TargetFilename>
+			<TargetFilename condition="end with">.crime</TargetFilename>
+			<TargetFilename condition="end with">.crinf</TargetFilename>
+			<TargetFilename condition="end with">.criptiko</TargetFilename>
+			<TargetFilename condition="end with">.criptokod</TargetFilename>
+			<TargetFilename condition="end with">.criptoko</TargetFilename>
+			<TargetFilename condition="end with">.cripttt</TargetFilename>
+			<TargetFilename condition="end with">.crjocker</TargetFilename>
+			<TargetFilename condition="end with">.crjoker</TargetFilename>
+			<TargetFilename condition="end with">.crptrgr</TargetFilename>
+			<TargetFilename condition="end with">.crrrt</TargetFilename>
+			<TargetFilename condition="end with">.cryeye</TargetFilename>
+			<TargetFilename condition="end with">.cryp1</TargetFilename>
+			<TargetFilename condition="end with">.crypt38</TargetFilename>
+			<TargetFilename condition="end with">.crypted</TargetFilename>
+			<TargetFilename condition="end with">.crypte</TargetFilename>
+			<TargetFilename condition="end with">.cryptolocker</TargetFilename>
+			<TargetFilename condition="end with">.crypto</TargetFilename>
+			<TargetFilename condition="end with">crypto</TargetFilename>
+			<TargetFilename condition="end with">.cryptotorlocker2015!</TargetFilename>
+			<TargetFilename condition="end with">.cryptowall</TargetFilename>
+			<TargetFilename condition="end with">._crypt</TargetFilename>
+			<TargetFilename condition="end with">.crypt</TargetFilename>
+			<TargetFilename condition="end with">.cryptz</TargetFilename>
+			<TargetFilename condition="end with">.crypz</TargetFilename>
+			<TargetFilename condition="end with">.crysis</TargetFilename>
+			<TargetFilename condition="end with">.cry</TargetFilename>
+			<TargetFilename condition="end with">cry</TargetFilename>
+			<TargetFilename condition="end with">.ctb2</TargetFilename>
+			<TargetFilename condition="end with">.ctbl2</TargetFilename>
+			<TargetFilename condition="end with">.ctbl</TargetFilename>
+			<TargetFilename condition="end with">.czvxce</TargetFilename>
+			<TargetFilename condition="end with">.d4nk</TargetFilename>
+			<TargetFilename condition="end with">.dale</TargetFilename>
+			<TargetFilename condition="end with">.damage</TargetFilename>
+			<TargetFilename condition="end with">.darkness</TargetFilename>
+			<TargetFilename condition="end with">.da_vinci_code</TargetFilename>
+			<TargetFilename condition="end with">.dcrypt</TargetFilename>
+			<TargetFilename condition="end with">.decrypt2017</TargetFilename>
+			<TargetFilename condition="end with">.ded</TargetFilename>
+			<TargetFilename condition="end with">.dexter</TargetFilename>
+			<TargetFilename condition="end with">.dharma</TargetFilename>
+			<TargetFilename condition="end with">.disposed2017</TargetFilename>
+			<TargetFilename condition="end with">.dll</TargetFilename>
+			<TargetFilename condition="end with">.domino</TargetFilename>
+			<TargetFilename condition="end with">.dxxd</TargetFilename>
+			<TargetFilename condition="end with">.dyatel@qq_com</TargetFilename>
+			<TargetFilename condition="end with">.ecc</TargetFilename>
+			<TargetFilename condition="end with">.edgel</TargetFilename>
+			<TargetFilename condition="end with">.encedrsa</TargetFilename>
+			<TargetFilename condition="end with">.enc_files.txt</TargetFilename>
+			<TargetFilename condition="end with">.enciphered</TargetFilename>
+			<TargetFilename condition="end with">.encmywork</TargetFilename>
+			<TargetFilename condition="end with">.encoderpass</TargetFilename>
+			<TargetFilename condition="end with">.encr</TargetFilename>
+			<TargetFilename condition="end with">.encryptedaes</TargetFilename>
+			<TargetFilename condition="end with">.encryptedrsa</TargetFilename>
+			<TargetFilename condition="end with">.encrypted </TargetFilename>
+			<TargetFilename condition="end with">.encrypted</TargetFilename>
+			<TargetFilename condition="end with">.encryptedyourfiles</TargetFilename>
+			<TargetFilename condition="end with">.encrypt</TargetFilename>
+			<TargetFilename condition="end with">.enc</TargetFilename>
+			<TargetFilename condition="end with">.enigma</TargetFilename>
+			<TargetFilename condition="end with">.epic</TargetFilename>
+			<TargetFilename condition="end with">.evillock</TargetFilename>
+			<TargetFilename condition="end with">.exotic</TargetFilename>
+			<TargetFilename condition="end with">.exx</TargetFilename>
+			<TargetFilename condition="end with">.ezz</TargetFilename>
+			<TargetFilename condition="end with">.fantom</TargetFilename>
+			<TargetFilename condition="end with">.file0locked</TargetFilename>
+			<TargetFilename condition="end with">.filegofprencrp</TargetFilename>
+			<TargetFilename condition="end with">.fileiscryptedhard</TargetFilename>
+			<TargetFilename condition="end with">.filock</TargetFilename>
+			<TargetFilename condition="end with">.frtrss</TargetFilename>
+			<TargetFilename condition="end with">.fucked</TargetFilename>
+			<TargetFilename condition="end with">.fuck</TargetFilename>
+			<TargetFilename condition="end with">.fucku</TargetFilename>
+			<TargetFilename condition="end with">.fuckyourdata</TargetFilename>
+			<TargetFilename condition="end with">.fun</TargetFilename>
+			<TargetFilename condition="end with">.gefickt</TargetFilename>
+			<TargetFilename condition="end with">.globe</TargetFilename>
+			<TargetFilename condition="end with">.goforhelp</TargetFilename>
+			<TargetFilename condition="end with">.good</TargetFilename>
+			<TargetFilename condition="end with">.grt</TargetFilename>
+			<TargetFilename condition="end with">.gruzin@qq_com</TargetFilename>
+			<TargetFilename condition="end with">.gws</TargetFilename>
+			<TargetFilename condition="end with">.h3ll</TargetFilename>
+			<TargetFilename condition="end with">.ha3</TargetFilename>
+			<TargetFilename condition="end with">.happenencedfiles</TargetFilename>
+			<TargetFilename condition="end with">.hb15</TargetFilename>
+			<TargetFilename condition="end with">.helpdecrypt@ukr.net</TargetFilename>
+			<TargetFilename condition="end with">.helpmeencedfiles</TargetFilename>
+			<TargetFilename condition="end with">.herbst</TargetFilename>
+			<TargetFilename condition="end with">.hnumkhotep</TargetFilename>
+			<TargetFilename condition="end with">.howcanihelpusir</TargetFilename>
+			<TargetFilename condition="end with">.hush</TargetFilename>
+			<TargetFilename condition="end with">.iaufkakfhsaraf</TargetFilename>
+			<TargetFilename condition="end with">.ifuckedyou</TargetFilename>
+			<TargetFilename condition="end with">.iloveworld</TargetFilename>
+			<TargetFilename condition="end with">.infected</TargetFilename>
+			<TargetFilename condition="end with">.info</TargetFilename>
+			<TargetFilename condition="end with">-instruction.html</TargetFilename>
+			<TargetFilename condition="end with">.isis</TargetFilename>
+			<TargetFilename condition="end with">.iwanthelpuuu</TargetFilename>
+			<TargetFilename condition="end with">.iwishiyou</TargetFilename>
+			<TargetFilename condition="end with">.justbtcwillhelpyou</TargetFilename>
+			<TargetFilename condition="end with">kb15</TargetFilename>
+			<TargetFilename condition="end with">.kernel_complete</TargetFilename>
+			<TargetFilename condition="end with">.kernel_pid</TargetFilename>
+			<TargetFilename condition="end with">.kernel_time</TargetFilename>
+			<TargetFilename condition="end with">.keybtc@inbox_com</TargetFilename>
+			<TargetFilename condition="end with">.keyh0les</TargetFilename>
+			<TargetFilename condition="end with">.keyz</TargetFilename>
+			<TargetFilename condition="end with">.kimcilware</TargetFilename>
+			<TargetFilename condition="end with">.kkk</TargetFilename>
+			<TargetFilename condition="end with">.korrektor</TargetFilename>
+			<TargetFilename condition="end with">.kostya</TargetFilename>
+			<TargetFilename condition="end with">.kraken</TargetFilename>
+			<TargetFilename condition="end with">kraken</TargetFilename>
+			<TargetFilename condition="end with">.kratos</TargetFilename>
+			<TargetFilename condition="end with">.kyra</TargetFilename>
+			<TargetFilename condition="end with">.last_chance.txt</TargetFilename>
+			<TargetFilename condition="end with">.lcked</TargetFilename>
+			<TargetFilename condition="end with">.lechiffre</TargetFilename>
+			<TargetFilename condition="end with">.legion</TargetFilename>
+			<TargetFilename condition="end with">.lesli</TargetFilename>
+			<TargetFilename condition="end with">.letmetrydecfiles</TargetFilename>
+			<TargetFilename condition="end with">.lock93</TargetFilename>
+			<TargetFilename condition="end with">.locked</TargetFilename>
+			<TargetFilename condition="end with">locked</TargetFilename>
+			<TargetFilename condition="end with">.locklock</TargetFilename>
+			<TargetFilename condition="end with">.lock</TargetFilename>
+			<TargetFilename condition="end with">.locky</TargetFilename>
+			<TargetFilename condition="end with">.loli</TargetFilename>
+			<TargetFilename condition="end with">.lol!</TargetFilename>
+			<TargetFilename condition="end with">.loveransisgood</TargetFilename>
+			<TargetFilename condition="end with">.lovewindows</TargetFilename>
+			<TargetFilename condition="end with">.madebyadam</TargetFilename>
+			<TargetFilename condition="end with">.magic</TargetFilename>
+			<TargetFilename condition="end with">.maya</TargetFilename>
+			<TargetFilename condition="end with">.mention9823</TargetFilename>
+			<TargetFilename condition="end with">.merry</TargetFilename>
+			<TargetFilename condition="end with">.message.txt</TargetFilename>
+			<TargetFilename condition="end with">.micro</TargetFilename>
+			<TargetFilename condition="end with">.mole</TargetFilename>
+			<TargetFilename condition="end with">.moments2900</TargetFilename>
+			<TargetFilename condition="end with">.mp3</TargetFilename>
+			<TargetFilename condition="end with">.mrcr1</TargetFilename>
+			<TargetFilename condition="end with">.myransext2017</TargetFilename>
+			<TargetFilename condition="end with">.nalog@qq_com</TargetFilename>
+			<TargetFilename condition="end with">.nefilim</TargetFilename>
+			<TargetFilename condition="end with">.nochance</TargetFilename>
+			<TargetFilename condition="end with">nochance</TargetFilename>
+			<TargetFilename condition="end with">.noproblemwedecfiles</TargetFilename>
+			<TargetFilename condition="end with">.notfoundrans</TargetFilename>
+			<TargetFilename condition="end with">.nuclear55</TargetFilename>
+			<TargetFilename condition="end with">.odcodc</TargetFilename>
+			<TargetFilename condition="end with">.odin</TargetFilename>
+			<TargetFilename condition="end with">.omg!</TargetFilename>
+			<TargetFilename condition="end with">.onion</TargetFilename>
+			<TargetFilename condition="end with">.only-we_can-help_you</TargetFilename>
+			<TargetFilename condition="end with">.oops</TargetFilename>
+			<TargetFilename condition="end with">.oor</TargetFilename>
+			<TargetFilename condition="end with">.oplata@qq_com</TargetFilename>
+			<TargetFilename condition="end with">.oshit</TargetFilename>
+			<TargetFilename condition="end with">oshit</TargetFilename>
+			<TargetFilename condition="end with">.osiris</TargetFilename>
+			<TargetFilename condition="end with">.otherinformation</TargetFilename>
+			<TargetFilename condition="end with">.p5tkjw</TargetFilename>
+			<TargetFilename condition="end with">.padcrypt</TargetFilename>
+			<TargetFilename condition="end with">.paybtcs</TargetFilename>
+			<TargetFilename condition="end with">.paymrss</TargetFilename>
+			<TargetFilename condition="end with">.payms</TargetFilename>
+			<TargetFilename condition="end with">.paymst</TargetFilename>
+			<TargetFilename condition="end with">.paym</TargetFilename>
+			<TargetFilename condition="end with">.paymts</TargetFilename>
+			<TargetFilename condition="end with">.payransom</TargetFilename>
+			<TargetFilename condition="end with">.payrms</TargetFilename>
+			<TargetFilename condition="end with">.pays</TargetFilename>
+			<TargetFilename condition="end with">.pdcr</TargetFilename>
+			<TargetFilename condition="end with">.pec</TargetFilename>
+			<TargetFilename condition="end with">.pegs1</TargetFilename>
+			<TargetFilename condition="end with">.perl</TargetFilename>
+			<TargetFilename condition="end with">.pizda@qq_com</TargetFilename>
+			<TargetFilename condition="end with">.poar2w</TargetFilename>
+			<TargetFilename condition="end with">.porno</TargetFilename>
+			<TargetFilename condition="end with">.poshkoder</TargetFilename>
+			<TargetFilename condition="end with">.potato</TargetFilename>
+			<TargetFilename condition="end with">.powerfulldecryp</TargetFilename>
+			<TargetFilename condition="end with">.powerfulldecrypt</TargetFilename>
+			<TargetFilename condition="end with">.prosperous666</TargetFilename>
+			<TargetFilename condition="end with">.pubg</TargetFilename>
+			<TargetFilename condition="end with">.purge</TargetFilename>
+			<TargetFilename condition="end with">.pzdc</TargetFilename>
+			<TargetFilename condition="end with">.r16m01d05</TargetFilename>
+			<TargetFilename condition="end with">.r4a</TargetFilename>
+			<TargetFilename condition="end with">.r5a</TargetFilename>
+			<TargetFilename condition="end with">.radamant</TargetFilename>
+			<TargetFilename condition="end with">.rad</TargetFilename>
+			<TargetFilename condition="end with">.raid10</TargetFilename>
+			<TargetFilename condition="end with">.rare1</TargetFilename>
+			<TargetFilename condition="end with">.razy</TargetFilename>
+			<TargetFilename condition="end with">.rdm</TargetFilename>
+			<TargetFilename condition="end with">.realfs0ciety@sigaint.org.fs0ciety</TargetFilename>
+			<TargetFilename condition="end with">.recovery_file.txt</TargetFilename>
+			<TargetFilename condition="end with">.recovery_key.txt</TargetFilename>
+			<TargetFilename condition="end with">.rekt</TargetFilename>
+			<TargetFilename condition="end with">.relock@qq_com</TargetFilename>
+			<TargetFilename condition="end with">.remind</TargetFilename>
+			<TargetFilename condition="end with">.rip</TargetFilename>
+			<TargetFilename condition="end with">.rmcm1</TargetFilename>
+			<TargetFilename condition="end with">.rmd</TargetFilename>
+			<TargetFilename condition="end with">.rnsmwr</TargetFilename>
+			<TargetFilename condition="end with">.rokku</TargetFilename>
+			<TargetFilename condition="end with">.rrk</TargetFilename>
+			<TargetFilename condition="end with">.rsnslocked</TargetFilename>
+			<TargetFilename condition="end with">.rsplited</TargetFilename>
+			<TargetFilename condition="end with">.ruby</TargetFilename>
+			<TargetFilename condition="end with">.ryk</TargetFilename>
+			<TargetFilename condition="end with">._ryp</TargetFilename>
+			<TargetFilename condition="end with">.sage</TargetFilename>
+			<TargetFilename condition="end with">.sanctioned</TargetFilename>
+			<TargetFilename condition="end with">.sanction</TargetFilename>
+			<TargetFilename condition="end with">.scl</TargetFilename>
+			<TargetFilename condition="end with">.securecrypted</TargetFilename>
+			<TargetFilename condition="end with">.serpent</TargetFilename>
+			<TargetFilename condition="end with">.serp</TargetFilename>
+			<TargetFilename condition="end with">.sexy</TargetFilename>
+			<TargetFilename condition="end with">.shino</TargetFilename>
+			<TargetFilename condition="end with">.shit</TargetFilename>
+			<TargetFilename condition="end with">.silent</TargetFilename>
+			<TargetFilename condition="end with">.skjdthghh</TargetFilename>
+			<TargetFilename condition="end with">.spora</TargetFilename>
+			<TargetFilename condition="end with">.sport</TargetFilename>
+			<TargetFilename condition="end with">.stn</TargetFilename>
+			<TargetFilename condition="end with">.stubbin</TargetFilename>
+			<TargetFilename condition="end with">.supercrypt</TargetFilename>
+			<TargetFilename condition="end with">.supported2017</TargetFilename>
+			<TargetFilename condition="end with">.suppose665</TargetFilename>
+			<TargetFilename condition="end with">.suppose666</TargetFilename>
+			<TargetFilename condition="end with">.surprise</TargetFilename>
+			<TargetFilename condition="end with">.szf</TargetFilename>
+			<TargetFilename condition="end with">.theworldisyours</TargetFilename>
+			<TargetFilename condition="end with">.thor</TargetFilename>
+			<TargetFilename condition="end with">.toxcrypt</TargetFilename>
+			<TargetFilename condition="end with">.troyancoder@qq_com</TargetFilename>
+			<TargetFilename condition="end with">.trun</TargetFilename>
+			<TargetFilename condition="end with">.ttt</TargetFilename>
+			<TargetFilename condition="end with">.tzu</TargetFilename>
+			<TargetFilename condition="end with">.unavailable</TargetFilename>
+			<TargetFilename condition="end with">.vault.hta</TargetFilename>
+			<TargetFilename condition="end with">.vault.key</TargetFilename>
+			<TargetFilename condition="end with">.vault</TargetFilename>
+			<TargetFilename condition="end with">.vault.txt</TargetFilename>
+			<TargetFilename condition="end with">.vbransom</TargetFilename>
+			<TargetFilename condition="end with">.vekanhelpu</TargetFilename>
+			<TargetFilename condition="end with">.venusf</TargetFilename>
+			<TargetFilename condition="end with">.venusp</TargetFilename>
+			<TargetFilename condition="end with">.vforvendetta</TargetFilename>
+			<TargetFilename condition="end with">.vindows</TargetFilename>
+			<TargetFilename condition="end with">.vscrypt</TargetFilename>
+			<TargetFilename condition="end with">.vvv</TargetFilename>
+			<TargetFilename condition="end with">.vxlock</TargetFilename>
+			<TargetFilename condition="end with">.wallet</TargetFilename>
+			<TargetFilename condition="end with">.wcry</TargetFilename>
+			<TargetFilename condition="end with">.weapologize</TargetFilename>
+			<TargetFilename condition="end with">.weareyourfriends</TargetFilename>
+			<TargetFilename condition="end with">.weencedufiles</TargetFilename>
+			<TargetFilename condition="end with">.wflx</TargetFilename>
+			<TargetFilename condition="end with">.whereisyourfiles</TargetFilename>
+			<TargetFilename condition="end with">.where_my_files.txt</TargetFilename>
+			<TargetFilename condition="end with">.windows10</TargetFilename>
+			<TargetFilename condition="end with">.wncry</TargetFilename>
+			<TargetFilename condition="end with">.wncryt</TargetFilename>
+			<TargetFilename condition="end with">.wnry</TargetFilename>
+			<TargetFilename condition="end with">.wowreadfordecryp</TargetFilename>
+			<TargetFilename condition="end with">.wowwhereismyfiles</TargetFilename>
+			<TargetFilename condition="end with">.xcri</TargetFilename>
+			<TargetFilename condition="end with">.xort</TargetFilename>
+			<TargetFilename condition="end with">.xrnt</TargetFilename>
+			<TargetFilename condition="end with">.xrtn</TargetFilename>
+			<TargetFilename condition="end with">.xtbl</TargetFilename>
+			<TargetFilename condition="end with">.xxx</TargetFilename>
+			<TargetFilename condition="end with">.xyz</TargetFilename>
+			<TargetFilename condition="end with">.ytbl</TargetFilename>
+			<TargetFilename condition="end with">.z81928819</TargetFilename>
+			<TargetFilename condition="end with">.zc3791</TargetFilename>
+			<TargetFilename condition="end with">.zcrypt</TargetFilename>
+			<TargetFilename condition="end with">.zepto</TargetFilename>
+			<TargetFilename condition="end with">.zorro</TargetFilename>
+			<TargetFilename condition="end with">.zyklon</TargetFilename>
+			<TargetFilename condition="end with">.zzz</TargetFilename>
+			<TargetFilename condition="end with">.zzzzz</TargetFilename>
 		</FileCreate>
 	</RuleGroup>
 
@@ -535,6 +1043,8 @@
 			<!--SECTION: Windows:Updates-->
 			<TargetFilename condition="begin with">C:\$WINDOWS.~BT\Sources\</TargetFilename> <!-- Windows: Feature updates containing lots of .exe and .sys-->
 			<Image condition="begin with">C:\Windows\winsxs\amd64_microsoft-windows</Image> <!-- Windows: Windows update-->
+			<!-- Personal Configurations-->
+			<Image condition="is">C:\Windows\System32\WUDFHost.exe</Image> <!--Windows: Windows User-Mode Driver Framework Host. Safe as long as in the correct path. Credit @lord-garmadon -->
 		</FileCreate>
 	</RuleGroup>
 
@@ -567,6 +1077,7 @@
 				<!--ADDITIONAL REFERENCE: [ http://www.silentrunners.org/launchpoints.html ] -->
 				<!--ADDITIONAL REFERENCE: [ https://www.microsoftpressstore.com/articles/article.aspx?p=2762082&seqNum=2 ] -->
 				<!--ADDITIONAL REFERENCE: [ https://web.archive.org/web/20200116001643/http://scholarworks.rit.edu/cgi/viewcontent.cgi?article=1533&context=theses | Understanding malware autostart techniques - Matthew Gottlieb ] -->
+			<TargetObject name="T1562.002" condition="end with">\MiniNT</TargetObject> <!--Windows: Disable eventlog by acting like WinPE [https://www.quppa.net/blog/2016/04/14/beware-of-the-minint-registry-key/]  -->
 			<TargetObject name="T1060,RunKey" condition="contains">CurrentVersion\Run</TargetObject> <!--Windows: Wildcard for Run keys, including RunOnce, RunOnceEx, RunServices, RunServicesOnce [Also covers terminal server] -->
 			<TargetObject name="T1060,RunPolicy" condition="contains">Policies\Explorer\Run</TargetObject> <!--Windows: Alternate runs keys | Credit @ion-storm-->
 			<TargetObject name="T1484" condition="contains">Group Policy\Scripts</TargetObject> <!--Windows: Group policy scripts-->
@@ -698,6 +1209,7 @@
 			<TargetObject name="InvDB-DriverVer" condition="end with">\DriverVerVersion</TargetObject> <!-- [ https://df-stream.com/2015/02/leveraging-devicecontainers-key/ ] -->
 			<TargetObject name="InvDB-CompileTimeClaim" condition="end with">\LinkDate</TargetObject> <!-- Compile time of EXE, may not be reliable [ https://en.wikipedia.org/wiki/Link_time ] -->
 			<TargetObject name="InvDB" condition="contains">Compatibility Assistant\Store\</TargetObject> <!-- Inventory -->
+			<TargetObject condition="begin with">HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Ports</TargetObject> <!--Microsoft:Windows: Printer port changes as used in CVE-2020-1048 [ https://windows-internals.com/printdemon-cve-2020-1048/ ] -->
 			<!--Suspicious sources-->
 			<Image name="Suspicious,ImageBeginWithBackslash" condition="end with">regedit.exe</Image> <!--Users and helpdesk staff making system modifications -->
 			<Image name="Suspicious,ImageBeginWithBackslash" condition="begin with">\</Image> <!--Devices and VSC shouldn't be executing changes | Credit: @SBousseaden @ionstorm @neu5ron @PerchedSystems [ https://twitter.com/SwiftOnSecurity/status/1133167323991486464 ] -->
@@ -781,6 +1293,7 @@
 		<!--NOTE: Other filesystem minifilters can make it appear to Sysmon that some files are being written twice. This is not a Sysmon issue, per Mark Russinovich.-->
 
 		<!--DATA: UtcTime, ProcessGuid, ProcessId, Image, TargetFilename, CreationUtcTime, Hash-->
+	<RuleGroup name="" groupRelation="or">	
 		<FileCreateStreamHash onmatch="include">
 			<TargetFilename condition="contains">Downloads</TargetFilename> <!--Downloaded files. Does not include "Run" files in IE-->
 			<TargetFilename condition="contains">Temp\7z</TargetFilename> <!--7zip extractions-->
@@ -799,6 +1312,7 @@
 			<TargetFilename condition="end with">.vbe</TargetFilename> <!--VisualBasicScripting files-->
 			<TargetFilename condition="end with">.vbs</TargetFilename> <!--VisualBasicScripting files-->
 		</FileCreateStreamHash>
+	</RuleGroup> 
 
 	<RuleGroup name="" groupRelation="or">
 		<FileCreateStreamHash onmatch="exclude">
@@ -1097,6 +1611,8 @@
 			<QueryName condition="is">status.rapidssl.com</QueryName>
 			<QueryName condition="is">status.thawte.com</QueryName>
 			<QueryName condition="is">ocsp.int-x3.letsencrypt.org</QueryName>
+			<!-- Personal Configurations-->
+			<Image condition="end with">msedge.exe</Image>
 		</DnsQuery>
 	</RuleGroup>
 
@@ -1110,8 +1626,8 @@
 
 	<!--
 	<RuleGroup name="" groupRelation="or">
-		<ClipboardChange onmatch="include">
-		</ClipboardChange>
+		<FileDelete onmatch="include">
+		</FileDelete>
 	</RuleGroup>
 	-->
 
